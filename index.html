@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Как Муся яйца ловила</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #dff3ff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        #game {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(
+                to bottom,
+                #87ceeb 0%,
+                #dff6ff 70%,
+                #9be28f 70%,
+                #72c96a 100%
+            );
+        }
+
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .score {
+            position: absolute;
+            top: 65px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .player {
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 70px;
+        }
+
+        .basket {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 70px;
+            transition: left 0.1s ease;
+        }
+
+        .egg {
+            position: absolute;
+            font-size: 42px;
+            top: 190px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .signature {
+            position: absolute;
+            bottom: 65px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(0,0,0,0.45);
+            pointer-events: none;
+        }
+
+        button {
+            border: none;
+            border-radius: 15px;
+            padding: 12px 22px;
+            font-size: 18px;
+            background: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #gameOver {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.25);
+            z-index: 10;
+        }
+
+        #gameOver h2 {
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        #gameOver p {
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <div class="title">
+        🥚 Как Муся яйца ловила
+    </div>
+
+    <div class="score">
+        Поймано: <span id="score">0</span>
+        <br>
+        Жизни: <span id="lives">❤️❤️❤️</span>
+    </div>
+
+    <div class="player">
+        🧑🏻
+    </div>
+
+    <div class="egg" id="egg">
+        🥚
+    </div>
+
+    <div class="basket" id="basket">
+        🧺
+    </div>
+
+    <div class="signature">
+        Сделано с ❤️ Матусевичем
+    </div>
+
+    <div class="controls">
+        <button onclick="moveLeft()">⬅️</button>
+        <button onclick="moveRight()">➡️</button>
+    </div>
+
+    <div id="gameOver">
+        <h2>💔 Муся не справилась с яйцами</h2>
+
+        <p>
+            Поймано яиц:
+            <strong><span id="finalScore">0</span></strong>
+        </p>
+
+        <button onclick="restartGame()">
+            🔄 Попробовать снова
+        </button>
+    </div>
+
+</div>
+
+<script>
+
+    let basketPosition = 50;
+    let score = 0;
+    let lives = 3;
+    let gameActive = true;
+    let eggSpeed = 5;
+    let goldenEgg = false;
+
+    const basket = document.getElementById("basket");
+    const egg = document.getElementById("egg");
+    const scoreText = document.getElementById("score");
+    const livesText = document.getElementById("lives");
+    const gameOver = document.getElementById("gameOver");
+    const finalScore = document.getElementById("finalScore");
+
+    function updateBasket() {
+        basket.style.left = basketPosition + "%";
+    }
+
+    function moveLeft() {
+        if (!gameActive) return;
+        basketPosition = Math.max(8, basketPosition - 8);
+        updateBasket();
+    }
+
+    function moveRight() {
+        if (!gameActive) return;
+        basketPosition = Math.min(92, basketPosition + 8);
+        updateBasket();
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") moveLeft();
+        if (e.key === "ArrowRight") moveRight();
+    });
+
+    function updateLives() {
+        livesText.textContent = "❤️".repeat(lives);
+    }
+
+    function throwEgg() {
+        if (!gameActive) return;
+
+        const eggX = Math.random() * 84 + 8;
+        goldenEgg = Math.random() < 0.15;
+
+        egg.textContent = "🥚";
+        egg.style.left = eggX + "%";
+        egg.style.top = "190px";
+
+        let position = 190;
+        const targetY = window.innerHeight - 150;
+
+        const fall = setInterval(() => {
+            if (!gameActive) {
+                clearInterval(fall);
+                return;
+            }
+
+            position += eggSpeed;
+            egg.style.top = position + "px";
+
+            if (position >= targetY) {
+                clearInterval(fall);
+
+                const basketX = basketPosition;
+
+                if (Math.abs(eggX - basketX) < 12) {
+                    score += goldenEgg ? 5 : 1;
+                    scoreText.textContent = score;
+
+                    if (score >= 15) eggSpeed = 11;
+                    else if (score >= 10) eggSpeed = 9;
+                    else if (score >= 5) eggSpeed = 7;
+
+                } else {
+                    lives--;
+                    updateLives();
+
+                    if (lives <= 0) {
+                        endGame();
+                        return;
+                    }
+                }
+
+                egg.style.top = "190px";
+
+                if (gameActive) throwEgg();
+            }
+        }, 30);
+    }
+
+    function endGame() {
+        gameActive = false;
+        finalScore.textContent = score;
+        gameOver.style.display = "block";
+    }
+
+    function restartGame() {
+        score = 0;
+        lives = 3;
+        gameActive = true;
+        basketPosition = 50;
+        eggSpeed = 5;
+        goldenEgg = false;
+
+        scoreText.textContent = score;
+        updateLives();
+        updateBasket();
+        gameOver.style.display = "none";
+        egg.style.top = "190px";
+
+        throwEgg();
+    }
+
+    updateBasket();
+    updateLives();
+    throwEgg();
+
+</script>
+
+</body>
+</html>
