@@ -16,7 +16,7 @@
     background: #dff3ff;
     font-family: Arial, sans-serif;
     overflow: hidden;
-    touch-action: manipulation;
+    touch-action: none;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -83,17 +83,7 @@
             transform: translateX(-50%);
         }
 
-        .controls {
-            position: absolute;
-    bottom: 5px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    padding: 0 10px;
-    z-index: 5;
-}
+        
 
         .signature {
             position: absolute;
@@ -181,10 +171,7 @@
         Сделано с ❤️ Матусевичем
     </div>
 
-    <div class="controls">
-        <button onclick="moveLeft()">⬅️</button>
-        <button onclick="moveRight()">➡️</button>
-    </div>
+    
 
     <div id="gameOver">
         <h2>💔 Муся не справилась с яйцами</h2>
@@ -316,6 +303,41 @@
 
         throwEgg();
     }
+    // ───── Управление пальцем / мышкой ─────
+    const gameEl = document.getElementById("game");
+
+    function moveBasketTo(clientX) {
+        if (!gameActive) return;
+        const rect = gameEl.getBoundingClientRect();
+        let percent = ((clientX - rect.left) / rect.width) * 100;
+        // Ограничиваем 8..92, как и раньше
+        percent = Math.max(8, Math.min(92, percent));
+        basketPosition = percent;
+        updateBasket();
+    }
+
+    // Мышь (комп)
+    gameEl.addEventListener("mousedown", (e) => {
+        moveBasketTo(e.clientX);
+        const onMove = (ev) => moveBasketTo(ev.clientX);
+        const onUp = () => {
+            window.removeEventListener("mousemove", onMove);
+            window.removeEventListener("mouseup", onUp);
+        };
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+    });
+
+    // Палец (телефон)
+    gameEl.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        moveBasketTo(e.touches[0].clientX);
+    }, { passive: false });
+
+    gameEl.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        moveBasketTo(e.touches[0].clientX);
+    }, { passive: false });
 
     updateBasket();
 updateLives();
