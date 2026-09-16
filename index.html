@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <title>Как Муся яйца ловила</title>
 
@@ -13,10 +13,14 @@
 
         body {
             margin: 0;
-            background: #dff3ff;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-        }
+    background: #dff3ff;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
 
         #game {
             width: 100vw;
@@ -81,13 +85,15 @@
 
         .controls {
             position: absolute;
-            bottom: 5px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
+    bottom: 5px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 0 10px;
+    z-index: 5;
+}
 
         .signature {
             position: absolute;
@@ -102,12 +108,19 @@
 
         button {
             border: none;
-            border-radius: 15px;
-            padding: 12px 22px;
-            font-size: 18px;
-            background: white;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-        }
+    border-radius: 18px;
+    padding: 18px 28px;
+    font-size: 24px;
+    background: white;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    min-width: 80px;
+}
+}
 
         button:active {
             transform: scale(0.95);
@@ -305,8 +318,16 @@
     }
 
     updateBasket();
-    updateLives();
-    throwEgg();
+updateLives();
+throwEgg();
+
+// Мгновенная реакция кнопок на тап (телефон)
+document.querySelectorAll('.controls button').forEach(btn => {
+    btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        btn.click();
+    }, { passive: false });
+});
 
 </script>
 
