@@ -75,8 +75,15 @@
             transition: left 0.1s ease;
         }
 
-        .egg {
-                    .egg.golden {
+                .egg {
+            position: absolute;
+            font-size: 42px;
+            top: 190px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .egg.golden {
             filter: drop-shadow(0 0 8px gold) drop-shadow(0 0 16px orange);
             animation: goldenPulse 0.6s ease-in-out infinite alternate;
         }
@@ -84,13 +91,6 @@
         @keyframes goldenPulse {
             from { transform: translateX(-50%) scale(1); }
             to   { transform: translateX(-50%) scale(1.15); }
-        }
-
-            position: absolute;
-            font-size: 42px;
-            top: 190px;
-            left: 50%;
-            transform: translateX(-50%);
         }
 
         
@@ -120,7 +120,7 @@
     -webkit-user-select: none;
     min-width: 80px;
 }
-}
+
 
         button:active {
             transform: scale(0.95);
@@ -238,7 +238,7 @@
         </p>
 
                 <button id="restartBtn">🔄 Попробовать снова</button>
-        </button>
+        
     </div>
 
 </div>
