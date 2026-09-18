@@ -158,6 +158,11 @@
             background: #4caf50;
             color: white;
             font-weight: bold;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
                #gameOver {
@@ -186,14 +191,13 @@
         }
     </style>
 </head>
-    <div id="startScreen">
+    
+<body>
+   <div id="startScreen">
         <h2>🥚 Как Муся яйца ловила</h2>
         <p>Води пальцем по экрану —<br>корзина едет за пальцем.<br><br>Поймай как можно больше яиц!</p>
         <button id="startBtn">🎮 Начать игру</button>
     </div>
-
-<body>
-
 <div id="game">
 
     <div class="title">
@@ -223,11 +227,7 @@
     </div>
 
     
-    <div id="startScreen">
-        <h2>🥚 Как Муся яйца ловила</h2>
-        <p>Води пальцем по экрану —<br>корзина едет за пальцем.<br><br>Поймай как можно больше яиц!</p>
-        <button onclick="startGame()">🎮 Начать игру</button>
-    </div>
+    
 
     <div id="gameOver">
         <h2>💔 Муся не справилась с яйцами</h2>
