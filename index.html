@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <title>Как Муся яйца ловила</title>
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
         * {
@@ -244,6 +245,10 @@
 </div>
 
 <script>
+        if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+    }
 
     let basketPosition = 50;
     let score = 0;
@@ -252,6 +257,31 @@
     let eggSpeed = 5;
     let goldenEgg = false;
     let gameStarted = false;
+        // ───── Вибрация ─────
+    function vibrate(type) {
+        // 1) Пробуем через Telegram WebApp (работает на iPhone + Android в Телеге)
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+            try {
+                if (type === "short") {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
+                } else if (type === "medium") {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred("medium");
+                } else if (type === "long") {
+                    window.Telegram.WebApp.HapticFeedback.notificationOccurred("error");
+                }
+                return;
+            } catch (e) {
+                // игнорируем
+            }
+        }
+
+        // 2) Фолбэк — обычная вибрация (Android, Chrome)
+        if (navigator.vibrate) {
+            if (type === "short") navigator.vibrate(30);
+            else if (type === "medium") navigator.vibrate(80);
+            else if (type === "long") navigator.vibrate([100, 50, 100, 50, 200]);
+        }
+    }
 
     const basket = document.getElementById("basket");
     const egg = document.getElementById("egg");
@@ -316,6 +346,7 @@
                 if (Math.abs(eggX - basketX) < 12) {
                     score += goldenEgg ? 5 : 1;
                     scoreText.textContent = score;
+                    if (goldenEgg) vibrate("short"); // лёгкий отклик на золотое яйцо
 
                     if (score >= 15) eggSpeed = 11;
                     else if (score >= 10) eggSpeed = 9;
@@ -324,6 +355,7 @@
                 } else {
                     lives--;
                     updateLives();
+                    vibrate("medium");
 
                     if (lives <= 0) {
                         endGame();
@@ -339,10 +371,11 @@
         }, 30);
     }
 
-    function endGame() {
+     function endGame() {
         gameActive = false;
         finalScore.textContent = score;
         gameOver.style.display = "block";
+        vibrate("long");
     }
 
         function restartGame() {
