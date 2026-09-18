@@ -76,6 +76,16 @@
         }
 
         .egg {
+                    .egg.golden {
+            filter: drop-shadow(0 0 8px gold) drop-shadow(0 0 16px orange);
+            animation: goldenPulse 0.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes goldenPulse {
+            from { transform: translateX(-50%) scale(1); }
+            to   { transform: translateX(-50%) scale(1.15); }
+        }
+
             position: absolute;
             font-size: 42px;
             top: 190px;
@@ -115,8 +125,42 @@
         button:active {
             transform: scale(0.95);
         }
+        #startScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px 40px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.25);
+            z-index: 20;
+            max-width: 85vw;
+        }
 
-        #gameOver {
+        #startScreen h2 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #333;
+        }
+
+        #startScreen p {
+            font-size: 16px;
+            color: #555;
+            margin: 15px 0 25px;
+            line-height: 1.4;
+        }
+
+        #startScreen button {
+            font-size: 22px;
+            padding: 18px 32px;
+            background: #4caf50;
+            color: white;
+            font-weight: bold;
+        }
+
+               #gameOver {
             display: none;
             position: absolute;
             top: 50%;
@@ -127,7 +171,9 @@
             border-radius: 25px;
             text-align: center;
             box-shadow: 0 5px 25px rgba(0,0,0,0.25);
-            z-index: 10;
+            z-index: 30;
+            pointer-events: auto;
+            touch-action: manipulation;
         }
 
         #gameOver h2 {
@@ -140,6 +186,11 @@
         }
     </style>
 </head>
+    <div id="startScreen">
+        <h2>🥚 Как Муся яйца ловила</h2>
+        <p>Води пальцем по экрану —<br>корзина едет за пальцем.<br><br>Поймай как можно больше яиц!</p>
+        <button onclick="startGame()">🎮 Начать игру</button>
+    </div>
 
 <body>
 
@@ -172,6 +223,11 @@
     </div>
 
     
+    <div id="startScreen">
+        <h2>🥚 Как Муся яйца ловила</h2>
+        <p>Води пальцем по экрану —<br>корзина едет за пальцем.<br><br>Поймай как можно больше яиц!</p>
+        <button onclick="startGame()">🎮 Начать игру</button>
+    </div>
 
     <div id="gameOver">
         <h2>💔 Муся не справилась с яйцами</h2>
@@ -181,8 +237,7 @@
             <strong><span id="finalScore">0</span></strong>
         </p>
 
-        <button onclick="restartGame()">
-            🔄 Попробовать снова
+                <button id="restartBtn">🔄 Попробовать снова</button>
         </button>
     </div>
 
@@ -196,6 +251,7 @@
     let gameActive = true;
     let eggSpeed = 5;
     let goldenEgg = false;
+    let gameStarted = false;
 
     const basket = document.getElementById("basket");
     const egg = document.getElementById("egg");
@@ -229,13 +285,14 @@
         livesText.textContent = "❤️".repeat(lives);
     }
 
-    function throwEgg() {
-        if (!gameActive) return;
+        function throwEgg() {
+        if (!gameActive || !gameStarted) return;
 
         const eggX = Math.random() * 84 + 8;
         goldenEgg = Math.random() < 0.15;
 
-        egg.textContent = "🥚";
+                egg.textContent = "🥚";
+        egg.classList.toggle("golden", goldenEgg);
         egg.style.left = eggX + "%";
         egg.style.top = "190px";
 
@@ -274,7 +331,8 @@
                     }
                 }
 
-                egg.style.top = "190px";
+                                egg.style.top = "190px";
+                egg.classList.remove("golden");
 
                 if (gameActive) throwEgg();
             }
@@ -287,10 +345,11 @@
         gameOver.style.display = "block";
     }
 
-    function restartGame() {
+        function restartGame() {
         score = 0;
         lives = 3;
         gameActive = true;
+        gameStarted = true;
         basketPosition = 50;
         eggSpeed = 5;
         goldenEgg = false;
@@ -300,6 +359,7 @@
         updateBasket();
         gameOver.style.display = "none";
         egg.style.top = "190px";
+        egg.classList.remove("golden");
 
         throwEgg();
     }
@@ -339,9 +399,22 @@
         moveBasketTo(e.touches[0].clientX);
     }, { passive: false });
 
-    updateBasket();
-updateLives();
+        function startGame() {
+        gameStarted = true;
+        document.getElementById("startScreen").style.display = "none";
+        throwEgg();
+    }
 
+    // Кнопка рестарта — надёжный клик и на телефоне
+    document.getElementById("restartBtn").addEventListener("click", restartGame);
+    document.getElementById("restartBtn").addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        restartGame();
+    }, { passive: false });
+
+    updateBasket();
+    updateLives();
+    // throwEgg() запускается из startGame()
 
 // Мгновенная реакция кнопок на тап (телефон)
 document.querySelectorAll('.controls button').forEach(btn => {
