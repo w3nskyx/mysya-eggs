@@ -189,7 +189,7 @@
     <div id="startScreen">
         <h2>🥚 Как Муся яйца ловила</h2>
         <p>Води пальцем по экрану —<br>корзина едет за пальцем.<br><br>Поймай как можно больше яиц!</p>
-        <button onclick="startGame()">🎮 Начать игру</button>
+        <button id="startBtn">🎮 Начать игру</button>
     </div>
 
 <body>
@@ -399,10 +399,25 @@
         moveBasketTo(e.touches[0].clientX);
     }, { passive: false });
 
-        function startGame() {
+           function startGame() {
         gameStarted = true;
-        document.getElementById("startScreen").style.display = "none";
+        const startScreen = document.getElementById("startScreen");
+        if (startScreen) {
+            startScreen.style.display = "none";
+            startScreen.style.visibility = "hidden";
+            startScreen.style.pointerEvents = "none";
+        }
         throwEgg();
+    }
+
+    // Кнопка старта — надёжный клик и на телефоне
+    const startBtn = document.getElementById("startBtn");
+    if (startBtn) {
+        startBtn.addEventListener("click", startGame);
+        startBtn.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            startGame();
+        }, { passive: false });
     }
 
     // Кнопка рестарта — надёжный клик и на телефоне
