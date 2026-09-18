@@ -399,15 +399,15 @@
         moveBasketTo(e.touches[0].clientX);
     }, { passive: false });
 
-           function startGame() {
-        gameStarted = true;
-        const startScreen = document.getElementById("startScreen");
-        if (startScreen) {
-            startScreen.style.display = "none";
-            startScreen.style.visibility = "hidden";
-            startScreen.style.pointerEvents = "none";
-        }
-        throwEgg();
+        function startGame() {
+    gameStarted = true;
+    const startScreen = document.getElementById("startScreen");
+    if (startScreen) {
+        startScreen.style.display = "none";
+        startScreen.style.visibility = "hidden";
+        startScreen.style.pointerEvents = "none";
+    }
+    throwEgg();
     }
 
     // Кнопка старта — надёжный клик и на телефоне
@@ -431,13 +431,7 @@
     updateLives();
     // throwEgg() запускается из startGame()
 
-// Мгновенная реакция кнопок на тап (телефон)
-document.querySelectorAll('.controls button').forEach(btn => {
-    btn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        btn.click();
-    }, { passive: false });
-});
+
 
 </script>
 
