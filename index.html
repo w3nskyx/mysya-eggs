@@ -422,11 +422,12 @@
             }
         }
 
-        // Спавн новых яиц
+               // Спавн новых яиц
         if (now - lastSpawnTime >= currentSpawnInterval) {
             lastSpawnTime = now;
             for (let i = 0; i < currentEggsPerSpawn; i++) {
-                setTimeout(spawnEgg, i * 150);  // разносим по времени чуть-чуть
+                // Разносим по времени на 50% от интервала, чтобы игрок успевал
+                setTimeout(spawnEgg, i * Math.floor(currentSpawnInterval * 0.5));
             }
         }
 
@@ -434,20 +435,29 @@
     }
 
     // ───── Сложность ─────
-    function updateDifficulty() {
-        // Каждые 3 очка — ускоряем
-        if (score >= 30) {
+        function updateDifficulty() {
+        // Прогрессия: сначала скорость и частота, потом количество
+        if (score >= 40) {
+            // Совсем хардкор — 2 яйца, но с разносом по времени
             currentEggSpeed = 11;
-            currentSpawnInterval = 700;
-            currentEggsPerSpawn = 3;
+            currentSpawnInterval = 800;
+            currentEggsPerSpawn = 2;
+        } else if (score >= 30) {
+            currentEggSpeed = 10;
+            currentSpawnInterval = 750;
+            currentEggsPerSpawn = 1;
         } else if (score >= 20) {
             currentEggSpeed = 9;
-            currentSpawnInterval = 900;
-            currentEggsPerSpawn = 2;
+            currentSpawnInterval = 850;
+            currentEggsPerSpawn = 1;
+        } else if (score >= 15) {
+            currentEggSpeed = 8;
+            currentSpawnInterval = 950;
+            currentEggsPerSpawn = 1;
         } else if (score >= 10) {
             currentEggSpeed = 7;
-            currentSpawnInterval = 1100;
-            currentEggsPerSpawn = 2;
+            currentSpawnInterval = 1050;
+            currentEggsPerSpawn = 1;
         } else if (score >= 5) {
             currentEggSpeed = 6;
             currentSpawnInterval = 1200;
