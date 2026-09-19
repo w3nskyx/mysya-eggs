@@ -76,12 +76,14 @@
             transition: left 0.1s ease;
         }
 
-                .egg {
+                    .egg {
             position: absolute;
             font-size: 42px;
-            top: 190px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 0;
+            left: 0;
+            transform: translate(-50%, 0);
+            pointer-events: none;
+            will-change: top, left;
         }
 
         .egg.golden {
@@ -90,8 +92,8 @@
         }
 
         @keyframes goldenPulse {
-            from { transform: translateX(-50%) scale(1); }
-            to   { transform: translateX(-50%) scale(1.15); }
+            from { transform: translate(-50%, 0) scale(1); }
+            to   { transform: translate(-50%, 0) scale(1.15); }
         }
 
         
@@ -215,9 +217,7 @@
         🧑🏻
     </div>
 
-    <div class="egg" id="egg">
-        🥚
-    </div>
+    
 
     <div class="basket" id="basket">
         🧺
@@ -245,37 +245,47 @@
 </div>
 
 <script>
-        if (window.Telegram && window.Telegram.WebApp) {
+            if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
     }
 
+    // ───── Состояние игры ─────
     let basketPosition = 50;
     let score = 0;
     let lives = 3;
     let gameActive = true;
-    let eggSpeed = 5;
-    let goldenEgg = false;
     let gameStarted = false;
-        // ───── Вибрация ─────
+    let eggSpeedBase = 5;         // базовая скорость падения яиц
+    let activeEggs = [];          // все летящие сейчас яйца
+    let spawnTimer = null;        // таймер спавна
+    let gameLoopTimer = null;     // общий игровой таймер (60fps)
+    let lastSpawnTime = 0;        // когда последний раз спавнили
+    let lastFrameTime = 0;        // для расчёта delta в игровом цикле
+
+    // ───── Настройки сложности ─────
+    let currentSpawnInterval = 1400;  // мс между спавнами (уменьшается со временем)
+    let currentEggsPerSpawn = 1;      // сколько яиц за раз (растёт)
+    let currentEggSpeed = 5;          // скорость падения (растёт)
+
+    // ───── Ссылки на DOM ─────
+    const basket = document.getElementById("basket");
+    const scoreText = document.getElementById("score");
+    const livesText = document.getElementById("lives");
+    const gameOver = document.getElementById("gameOver");
+    const finalScore = document.getElementById("finalScore");
+    const gameEl = document.getElementById("game");
+
+    // ───── Вибрация ─────
     function vibrate(type) {
-        // 1) Пробуем через Telegram WebApp (работает на iPhone + Android в Телеге)
         if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
             try {
-                if (type === "short") {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
-                } else if (type === "medium") {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred("medium");
-                } else if (type === "long") {
-                    window.Telegram.WebApp.HapticFeedback.notificationOccurred("error");
-                }
+                if (type === "short") window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
+                else if (type === "medium") window.Telegram.WebApp.HapticFeedback.impactOccurred("medium");
+                else if (type === "long") window.Telegram.WebApp.HapticFeedback.notificationOccurred("error");
                 return;
-            } catch (e) {
-                // игнорируем
-            }
+            } catch (e) {}
         }
-
-        // 2) Фолбэк — обычная вибрация (Android, Chrome)
         if (navigator.vibrate) {
             if (type === "short") navigator.vibrate(30);
             else if (type === "medium") navigator.vibrate(80);
@@ -283,127 +293,15 @@
         }
     }
 
-    const basket = document.getElementById("basket");
-    const egg = document.getElementById("egg");
-    const scoreText = document.getElementById("score");
-    const livesText = document.getElementById("lives");
-    const gameOver = document.getElementById("gameOver");
-    const finalScore = document.getElementById("finalScore");
-
+    // ───── Корзина ─────
     function updateBasket() {
         basket.style.left = basketPosition + "%";
     }
-
-    function moveLeft() {
-        if (!gameActive) return;
-        basketPosition = Math.max(8, basketPosition - 8);
-        updateBasket();
-    }
-
-    function moveRight() {
-        if (!gameActive) return;
-        basketPosition = Math.min(92, basketPosition + 8);
-        updateBasket();
-    }
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowLeft") moveLeft();
-        if (e.key === "ArrowRight") moveRight();
-    });
-
-    function updateLives() {
-        livesText.textContent = "❤️".repeat(lives);
-    }
-
-        function throwEgg() {
-        if (!gameActive || !gameStarted) return;
-
-        const eggX = Math.random() * 84 + 8;
-        goldenEgg = Math.random() < 0.15;
-
-                egg.textContent = "🥚";
-        egg.classList.toggle("golden", goldenEgg);
-        egg.style.left = eggX + "%";
-        egg.style.top = "190px";
-
-        let position = 190;
-        const targetY = window.innerHeight - 150;
-
-        const fall = setInterval(() => {
-            if (!gameActive) {
-                clearInterval(fall);
-                return;
-            }
-
-            position += eggSpeed;
-            egg.style.top = position + "px";
-
-            if (position >= targetY) {
-                clearInterval(fall);
-
-                const basketX = basketPosition;
-
-                if (Math.abs(eggX - basketX) < 12) {
-                    score += goldenEgg ? 5 : 1;
-                    scoreText.textContent = score;
-                    if (goldenEgg) vibrate("short"); // лёгкий отклик на золотое яйцо
-
-                    if (score >= 15) eggSpeed = 11;
-                    else if (score >= 10) eggSpeed = 9;
-                    else if (score >= 5) eggSpeed = 7;
-
-                } else {
-                    lives--;
-                    updateLives();
-                    vibrate("medium");
-
-                    if (lives <= 0) {
-                        endGame();
-                        return;
-                    }
-                }
-
-                                egg.style.top = "190px";
-                egg.classList.remove("golden");
-
-                if (gameActive) throwEgg();
-            }
-        }, 30);
-    }
-
-     function endGame() {
-        gameActive = false;
-        finalScore.textContent = score;
-        gameOver.style.display = "block";
-        vibrate("long");
-    }
-
-        function restartGame() {
-        score = 0;
-        lives = 3;
-        gameActive = true;
-        gameStarted = true;
-        basketPosition = 50;
-        eggSpeed = 5;
-        goldenEgg = false;
-
-        scoreText.textContent = score;
-        updateLives();
-        updateBasket();
-        gameOver.style.display = "none";
-        egg.style.top = "190px";
-        egg.classList.remove("golden");
-
-        throwEgg();
-    }
-    // ───── Управление пальцем / мышкой ─────
-    const gameEl = document.getElementById("game");
 
     function moveBasketTo(clientX) {
         if (!gameActive) return;
         const rect = gameEl.getBoundingClientRect();
         let percent = ((clientX - rect.left) / rect.width) * 100;
-        // Ограничиваем 8..92, как и раньше
         percent = Math.max(8, Math.min(92, percent));
         basketPosition = percent;
         updateBasket();
@@ -432,18 +330,189 @@
         moveBasketTo(e.touches[0].clientX);
     }, { passive: false });
 
-        function startGame() {
-    gameStarted = true;
-    const startScreen = document.getElementById("startScreen");
-    if (startScreen) {
-        startScreen.style.display = "none";
-        startScreen.style.visibility = "hidden";
-        startScreen.style.pointerEvents = "none";
-    }
-    throwEgg();
+    // ───── Жизни ─────
+    function updateLives() {
+        livesText.textContent = "❤️".repeat(lives);
     }
 
-    // Кнопка старта — надёжный клик и на телефоне
+    // ───── Спавн яйца ─────
+    function spawnEgg() {
+        if (!gameActive || !gameStarted) return;
+
+        const eggX = Math.random() * 84 + 8;        // 8..92 %
+        const isGolden = Math.random() < 0.15;
+
+        // Создаём DOM-элемент
+        const eggEl = document.createElement("div");
+        eggEl.className = "egg" + (isGolden ? " golden" : "");
+        eggEl.textContent = "🥚";
+        eggEl.style.left = eggX + "%";
+        eggEl.style.top = "190px";
+        gameEl.appendChild(eggEl);
+
+        // Объект яйца
+        const eggObj = {
+            el: eggEl,
+            x: eggX,
+            y: 190,
+            speed: currentEggSpeed,
+            isGolden: isGolden,
+            alive: true
+        };
+
+        activeEggs.push(eggObj);
+    }
+
+    // ───── Проверка попадания ─────
+    function checkCatch(egg) {
+        return Math.abs(egg.x - basketPosition) < 12;
+    }
+
+    // ───── Обработка долетевшего яйца ─────
+    function handleEggLanded(egg) {
+        const caught = checkCatch(egg);
+
+        if (caught) {
+            score += egg.isGolden ? 5 : 1;
+            scoreText.textContent = score;
+            if (egg.isGolden) vibrate("short");
+        } else {
+            lives--;
+            updateLives();
+            vibrate("medium");
+
+            if (lives <= 0) {
+                endGame();
+                return;
+            }
+        }
+
+        // Удаляем яйцо
+        egg.alive = false;
+        if (egg.el.parentNode) egg.el.parentNode.removeChild(egg.el);
+    }
+
+    // ───── Игровой цикл (60fps) ─────
+    function gameLoop(now) {
+        if (!gameActive || !gameStarted) {
+            gameLoopTimer = null;
+            return;
+        }
+
+        if (!lastFrameTime) lastFrameTime = now;
+        const delta = (now - lastFrameTime) / 16.67;  // 1 = один кадр при 60fps
+        lastFrameTime = now;
+
+        const targetY = window.innerHeight - 150;
+
+        // Двигаем все яйца
+        for (let i = activeEggs.length - 1; i >= 0; i--) {
+            const egg = activeEggs[i];
+            if (!egg.alive) {
+                activeEggs.splice(i, 1);
+                continue;
+            }
+
+            egg.y += egg.speed * delta;
+            egg.el.style.top = egg.y + "px";
+
+            if (egg.y >= targetY) {
+                handleEggLanded(egg);
+                activeEggs.splice(i, 1);
+            }
+        }
+
+        // Спавн новых яиц
+        if (now - lastSpawnTime >= currentSpawnInterval) {
+            lastSpawnTime = now;
+            for (let i = 0; i < currentEggsPerSpawn; i++) {
+                setTimeout(spawnEgg, i * 150);  // разносим по времени чуть-чуть
+            }
+        }
+
+        gameLoopTimer = requestAnimationFrame(gameLoop);
+    }
+
+    // ───── Сложность ─────
+    function updateDifficulty() {
+        // Каждые 3 очка — ускоряем
+        if (score >= 30) {
+            currentEggSpeed = 11;
+            currentSpawnInterval = 700;
+            currentEggsPerSpawn = 3;
+        } else if (score >= 20) {
+            currentEggSpeed = 9;
+            currentSpawnInterval = 900;
+            currentEggsPerSpawn = 2;
+        } else if (score >= 10) {
+            currentEggSpeed = 7;
+            currentSpawnInterval = 1100;
+            currentEggsPerSpawn = 2;
+        } else if (score >= 5) {
+            currentEggSpeed = 6;
+            currentSpawnInterval = 1200;
+            currentEggsPerSpawn = 1;
+        } else {
+            currentEggSpeed = 5;
+            currentSpawnInterval = 1400;
+            currentEggsPerSpawn = 1;
+        }
+    }
+
+    // ───── Управление игрой ─────
+    function startGame() {
+        gameStarted = true;
+        const startScreen = document.getElementById("startScreen");
+        if (startScreen) {
+            startScreen.style.display = "none";
+            startScreen.style.visibility = "hidden";
+            startScreen.style.pointerEvents = "none";
+        }
+        lastSpawnTime = performance.now();
+        lastFrameTime = performance.now();
+        gameLoopTimer = requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+        gameActive = false;
+        gameStarted = false;
+        finalScore.textContent = score;
+        gameOver.style.display = "block";
+        vibrate("long");
+
+        if (gameLoopTimer) {
+            cancelAnimationFrame(gameLoopTimer);
+            gameLoopTimer = null;
+        }
+    }
+
+    function restartGame() {
+        // Чистим старые яйца
+        activeEggs.forEach(e => {
+            if (e.el.parentNode) e.el.parentNode.removeChild(e.el);
+        });
+        activeEggs = [];
+
+        score = 0;
+        lives = 3;
+        gameActive = true;
+        gameStarted = true;
+        basketPosition = 50;
+        currentEggSpeed = 5;
+        currentSpawnInterval = 1400;
+        currentEggsPerSpawn = 1;
+
+        scoreText.textContent = score;
+        updateLives();
+        updateBasket();
+        gameOver.style.display = "none";
+
+        lastSpawnTime = performance.now();
+        lastFrameTime = performance.now();
+        gameLoopTimer = requestAnimationFrame(gameLoop);
+    }
+
+    // ───── Кнопки ─────
     const startBtn = document.getElementById("startBtn");
     if (startBtn) {
         startBtn.addEventListener("click", startGame);
@@ -453,16 +522,23 @@
         }, { passive: false });
     }
 
-    // Кнопка рестарта — надёжный клик и на телефоне
     document.getElementById("restartBtn").addEventListener("click", restartGame);
     document.getElementById("restartBtn").addEventListener("touchstart", (e) => {
         e.preventDefault();
         restartGame();
     }, { passive: false });
 
+    // ───── Стартовая отрисовка ─────
     updateBasket();
     updateLives();
-    // throwEgg() запускается из startGame()
+
+    // Обновление сложности в игровом цикле
+    const originalGameLoop = gameLoop;
+    gameLoop = function(now) {
+        updateDifficulty();
+        originalGameLoop(now);
+    };
+
 
 
 
