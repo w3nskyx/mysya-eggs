@@ -1,558 +1,82 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <title>Как Муся яйца ловила</title>
-        <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-    background: #dff3ff;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-        #game {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(
-                to bottom,
-                #87ceeb 0%,
-                #dff6ff 70%,
-                #9be28f 70%,
-                #72c96a 100%
-            );
-        }
-
-        .title {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 26px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .score {
-            position: absolute;
-            top: 65px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 22px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .player {
-            position: absolute;
-            top: 120px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 70px;
-        }
-
-        .basket {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 70px;
-            transition: left 0.1s ease;
-        }
-
-                    .egg {
-            position: absolute;
-            font-size: 42px;
-            top: 0;
-            left: 0;
-            transform: translate(-50%, 0);
-            pointer-events: none;
-            will-change: top, left;
-        }
-
-        .egg.golden {
-            filter: drop-shadow(0 0 8px gold) drop-shadow(0 0 16px orange);
-            animation: goldenPulse 0.6s ease-in-out infinite alternate;
-        }
-
-        @keyframes goldenPulse {
-            from { transform: translate(-50%, 0) scale(1); }
-            to   { transform: translate(-50%, 0) scale(1.15); }
-        }
-
-        
-
-        .signature {
-            position: absolute;
-            bottom: 65px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 13px;
-            color: rgba(0,0,0,0.45);
-            pointer-events: none;
-        }
-
-        button {
-            border: none;
-    border-radius: 18px;
-    padding: 18px 28px;
-    font-size: 24px;
-    background: white;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-    min-width: 80px;
-}
-
-
-        button:active {
-            transform: scale(0.95);
-        }
-        #startScreen {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px 40px;
-            border-radius: 25px;
-            text-align: center;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.25);
-            z-index: 20;
-            max-width: 85vw;
-        }
-
-        #startScreen h2 {
-            margin-top: 0;
-            font-size: 24px;
-            color: #333;
-        }
-
-        #startScreen p {
-            font-size: 16px;
-            color: #555;
-            margin: 15px 0 25px;
-            line-height: 1.4;
-        }
-
-        #startScreen button {
-            font-size: 22px;
-            padding: 18px 32px;
-            background: #4caf50;
-            color: white;
-            font-weight: bold;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-               #gameOver {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 25px;
-            text-align: center;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.25);
-            z-index: 30;
-            pointer-events: auto;
-            touch-action: manipulation;
-        }
-
-        #gameOver h2 {
-            margin-top: 0;
-            font-size: 24px;
-        }
-
-        #gameOver p {
-            font-size: 20px;
-        }
-    </style>
-</head>
-    
-<body>
-   <div id="startScreen">
-        <h2>🥚 Как Муся яйца ловила</h2>
-        <p>Води пальцем по экрану —<br>корзина едет за пальцем.<br><br>Поймай как можно больше яиц!</p>
-        <button id="startBtn">🎮 Начать игру</button>
-    </div>
-<div id="game">
-
-    <div class="title">
-        🥚 Как Муся яйца ловила
-    </div>
-
-    <div class="score">
-        Поймано: <span id="score">0</span>
-        <br>
-        Жизни: <span id="lives">❤️❤️❤️</span>
-    </div>
-
-    <div class="player">
-        🧑🏻
-    </div>
-
-    
-
-    <div class="basket" id="basket">
-        🧺
-    </div>
-
-    <div class="signature">
-        Сделано с ❤️ Матусевичем
-    </div>
-
-    
-    
-
-    <div id="gameOver">
-        <h2>💔 Муся не справилась с яйцами</h2>
-
-        <p>
-            Поймано яиц:
-            <strong><span id="finalScore">0</span></strong>
-        </p>
-
-                <button id="restartBtn">🔄 Попробовать снова</button>
-        
-    </div>
-
-</div>
-
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="theme-color" content="#162b2a"><title>Муся и золотое гнездо</title>
+<style>
+[hidden]{display:none!important}:root{--cream:#fff4d8;--muted:#b5c7b4;--gold:#ffd477;--green:#bce5a0}*{box-sizing:border-box}body{margin:0;background:#101e20;color:var(--cream);font-family:system-ui,-apple-system,sans-serif;overscroll-behavior:none}button{font:inherit;cursor:pointer;color:inherit;border:0;touch-action:manipulation}button:disabled{opacity:.4;cursor:default}button:focus-visible{outline:3px solid white;outline-offset:3px}#app{position:relative;width:min(100%,520px);height:100dvh;min-height:440px;margin:auto;overflow:hidden;background:#183d38}canvas{width:100%;height:100%;display:block;touch-action:none}.hud{position:absolute;top:0;left:0;right:0;padding:calc(14px + env(safe-area-inset-top)) 20px 12px;background:linear-gradient(#102b2bee,transparent);pointer-events:none}.top{display:flex;align-items:center;justify-content:space-between;gap:10px}.eyebrow{text-transform:uppercase;letter-spacing:2.4px;font-size:10px;font-weight:800;color:var(--green)}h1{font-family:Georgia,serif;font-size:clamp(39px,10vw,56px);font-weight:500;line-height:1.04;margin:12px 0 16px}h2{font:500 30px/1.15 Georgia,serif;margin:9px 0 13px}h3{margin:3px 0 5px;font-size:16px}p{color:var(--muted);font-size:14px;line-height:1.6;margin:8px 0 18px}.iconbtn{width:40px;height:40px;border-radius:50%;background:#ffffff15;pointer-events:auto}.stats{display:flex;gap:8px;margin:12px 0}.pill{padding:8px 12px;background:#ffffff0d;border:1px solid #ffffff12;border-radius:13px;font-size:12px}.bar{height:5px;border-radius:8px;background:#ffffff20;overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:var(--gold);transition:width .2s}.hudsmall{display:flex;justify-content:space-between;margin-top:9px;font-size:12px}#bottom{position:absolute;bottom:calc(17px + env(safe-area-inset-bottom));left:20px;right:20px;display:flex;gap:12px;align-items:center;justify-content:space-between}#power{background:var(--cream);color:#25483e;border-radius:20px;padding:12px 17px;font-weight:800;font-size:13px}#hint{font-size:11px;color:#d5e5ce;max-width:190px}.overlay{position:absolute;inset:0;z-index:5;background:linear-gradient(180deg,#122e2be8,#112622f5);padding:calc(25px + env(safe-area-inset-top)) 25px calc(22px + env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column}.overlay[hidden]{display:none}.content{width:100%;margin:auto 0}.brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.tiny{font-size:11px;color:var(--muted)}.hero{height:172px;position:relative;display:flex;align-items:center;justify-content:center;margin:5px 0 12px}.halo{width:165px;height:165px;border-radius:50%;background:radial-gradient(#ffce7240,#ffce7203);border:1px solid #d8ca7e25;display:grid;place-items:center;position:relative}.egg{width:65px;height:86px;border-radius:50% 50% 46% 46%;background:radial-gradient(circle at 30% 25%,#fff7be,#f8cc67 48%,#b8762e);box-shadow:0 0 38px #ffd36b30;transform:rotate(-12deg);position:relative}.egg:after{content:'✦';position:absolute;top:29px;left:22px;font-size:27px;color:#fff9d6}.orbit{position:absolute;font-size:30px}.primary,.secondary{width:100%;padding:16px;border-radius:16px;font-weight:800;font-size:15px;margin-top:10px}.primary{background:var(--gold);color:#29382a;box-shadow:0 5px 0 #b18b4640}.secondary{background:#ffffff0b;border:1px solid #ffffff1c}.row{display:flex;gap:10px}.row>*{flex:1}.footer{text-align:center;font-size:11px;color:#9eaf99;margin:21px 0 0}.cards{display:grid;gap:10px;margin:18px 0}.card{display:flex;gap:14px;text-align:left;align-items:center;padding:16px;border:1px solid #9ebc9630;background:linear-gradient(130deg,#ffffff0d,#ffffff03);border-radius:17px;width:100%}.card:hover:not(:disabled){border-color:var(--gold);background:#ffffff12}.card .symbol{font-size:30px;min-width:39px;text-align:center}.card p{font-size:12px;line-height:1.5;margin:4px 0 0}.tag{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold)}.map{display:flex;justify-content:space-between;margin:24px 0 18px;position:relative}.map:before{content:'';position:absolute;height:1px;background:#ffffff30;left:0;right:0;top:15px}.node{z-index:1;border:1px solid #607c64;background:#173c34;border-radius:50%;width:29px;height:29px;display:grid;place-items:center;font-size:11px}.node.done{background:#bce5a0;color:#18372c}.node.current{border:2px solid var(--gold);color:var(--gold)}#toast{position:absolute;z-index:9;top:42%;left:20px;right:20px;text-align:center;pointer-events:none;font-weight:800;font-size:22px;color:#fff5d4;text-shadow:0 2px 12px #12251d;opacity:0;transition:opacity .2s}#toast.show{opacity:1}.collection{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}.collect{background:#ffffff08;border:1px solid #ffffff15;border-radius:15px;padding:17px 7px;text-align:center;font-size:11px}.collect span{display:block;font-size:30px;margin-bottom:8px}.locked{opacity:.35}.note{padding:13px;border-radius:12px;background:#ffd47710;color:#ead7ac;font-size:12px;line-height:1.6}.bigstat{font:42px Georgia,serif;color:var(--gold)}@media(max-height:700px){.hero{height:115px}.halo{width:115px;height:115px}h1{font-size:39px}.overlay{padding-top:18px}.card{padding:12px}.footer{margin-top:14px}}
+</style></head><body><main id="app"><canvas id="world" aria-label="Игровое поле. Двигайте корзину пальцем, мышью или стрелками."></canvas><header class="hud" id="hud" hidden><div class="top"><div><div class="eyebrow" id="location"></div><h3 id="levelTitle"></h3></div><button class="iconbtn" id="pause" aria-label="Пауза">Ⅱ</button></div><div class="hudsmall"><span id="health"></span><span id="score"></span></div><div class="bar"><i id="progress"></i></div><div class="hudsmall"><span id="objective"></span><span id="combo"></span></div></header><div id="bottom" hidden><span id="hint">Води пальцем по полю<br>или нажимай ← →</span><button id="power">❄ Замедлить</button></div><section class="overlay" id="screen"></section><div id="toast" role="status"></div></main>
 <script>
-            if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-    }
-
-    // ───── Состояние игры ─────
-    let basketPosition = 50;
-    let score = 0;
-    let lives = 3;
-    let gameActive = true;
-    let gameStarted = false;
-    let eggSpeedBase = 5;         // базовая скорость падения яиц
-    let activeEggs = [];          // все летящие сейчас яйца
-    let spawnTimer = null;        // таймер спавна
-    let gameLoopTimer = null;     // общий игровой таймер (60fps)
-    let lastSpawnTime = 0;        // когда последний раз спавнили
-    let lastFrameTime = 0;        // для расчёта delta в игровом цикле
-
-    // ───── Настройки сложности ─────
-    let currentSpawnInterval = 1400;  // мс между спавнами (уменьшается со временем)
-    let currentEggsPerSpawn = 1;      // сколько яиц за раз (растёт)
-    let currentEggSpeed = 5;          // скорость падения (растёт)
-
-    // ───── Ссылки на DOM ─────
-    const basket = document.getElementById("basket");
-    const scoreText = document.getElementById("score");
-    const livesText = document.getElementById("lives");
-    const gameOver = document.getElementById("gameOver");
-    const finalScore = document.getElementById("finalScore");
-    const gameEl = document.getElementById("game");
-
-    // ───── Вибрация ─────
-    function vibrate(type) {
-        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
-            try {
-                if (type === "short") window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
-                else if (type === "medium") window.Telegram.WebApp.HapticFeedback.impactOccurred("medium");
-                else if (type === "long") window.Telegram.WebApp.HapticFeedback.notificationOccurred("error");
-                return;
-            } catch (e) {}
-        }
-        if (navigator.vibrate) {
-            if (type === "short") navigator.vibrate(30);
-            else if (type === "medium") navigator.vibrate(80);
-            else if (type === "long") navigator.vibrate([100, 50, 100, 50, 200]);
-        }
-    }
-
-    // ───── Корзина ─────
-    function updateBasket() {
-        basket.style.left = basketPosition + "%";
-    }
-
-    function moveBasketTo(clientX) {
-        if (!gameActive) return;
-        const rect = gameEl.getBoundingClientRect();
-        let percent = ((clientX - rect.left) / rect.width) * 100;
-        percent = Math.max(8, Math.min(92, percent));
-        basketPosition = percent;
-        updateBasket();
-    }
-
-    // Мышь (комп)
-    gameEl.addEventListener("mousedown", (e) => {
-        moveBasketTo(e.clientX);
-        const onMove = (ev) => moveBasketTo(ev.clientX);
-        const onUp = () => {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", onUp);
-        };
-        window.addEventListener("mousemove", onMove);
-        window.addEventListener("mouseup", onUp);
-    });
-
-    // Палец (телефон)
-    gameEl.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        moveBasketTo(e.touches[0].clientX);
-    }, { passive: false });
-
-    gameEl.addEventListener("touchmove", (e) => {
-        e.preventDefault();
-        moveBasketTo(e.touches[0].clientX);
-    }, { passive: false });
-
-    // ───── Жизни ─────
-    function updateLives() {
-        livesText.textContent = "❤️".repeat(lives);
-    }
-
-    // ───── Спавн яйца ─────
-    function spawnEgg() {
-        if (!gameActive || !gameStarted) return;
-
-        const eggX = Math.random() * 84 + 8;        // 8..92 %
-        const isGolden = Math.random() < 0.15;
-
-        // Создаём DOM-элемент
-        const eggEl = document.createElement("div");
-        eggEl.className = "egg" + (isGolden ? " golden" : "");
-        eggEl.textContent = "🥚";
-        eggEl.style.left = eggX + "%";
-        eggEl.style.top = "190px";
-        gameEl.appendChild(eggEl);
-
-        // Объект яйца
-        const eggObj = {
-            el: eggEl,
-            x: eggX,
-            y: 190,
-            speed: currentEggSpeed,
-            isGolden: isGolden,
-            alive: true
-        };
-
-        activeEggs.push(eggObj);
-    }
-
-    // ───── Проверка попадания ─────
-    function checkCatch(egg) {
-        return Math.abs(egg.x - basketPosition) < 12;
-    }
-
-    // ───── Обработка долетевшего яйца ─────
-    function handleEggLanded(egg) {
-        const caught = checkCatch(egg);
-
-        if (caught) {
-            score += egg.isGolden ? 5 : 1;
-            scoreText.textContent = score;
-            if (egg.isGolden) vibrate("short");
-        } else {
-            lives--;
-            updateLives();
-            vibrate("medium");
-
-            if (lives <= 0) {
-                endGame();
-                return;
-            }
-        }
-
-        // Удаляем яйцо
-        egg.alive = false;
-        if (egg.el.parentNode) egg.el.parentNode.removeChild(egg.el);
-    }
-
-    // ───── Игровой цикл (60fps) ─────
-    function gameLoop(now) {
-        if (!gameActive || !gameStarted) {
-            gameLoopTimer = null;
-            return;
-        }
-
-        if (!lastFrameTime) lastFrameTime = now;
-        const delta = (now - lastFrameTime) / 16.67;  // 1 = один кадр при 60fps
-        lastFrameTime = now;
-
-        const targetY = window.innerHeight - 150;
-
-        // Двигаем все яйца
-        for (let i = activeEggs.length - 1; i >= 0; i--) {
-            const egg = activeEggs[i];
-            if (!egg.alive) {
-                activeEggs.splice(i, 1);
-                continue;
-            }
-
-            egg.y += egg.speed * delta;
-            egg.el.style.top = egg.y + "px";
-
-            if (egg.y >= targetY) {
-                handleEggLanded(egg);
-                activeEggs.splice(i, 1);
-            }
-        }
-
-               // Спавн новых яиц
-        if (now - lastSpawnTime >= currentSpawnInterval) {
-            lastSpawnTime = now;
-            for (let i = 0; i < currentEggsPerSpawn; i++) {
-                // Разносим по времени на 50% от интервала, чтобы игрок успевал
-                setTimeout(spawnEgg, i * Math.floor(currentSpawnInterval * 0.5));
-            }
-        }
-
-        gameLoopTimer = requestAnimationFrame(gameLoop);
-    }
-
-    // ───── Сложность ─────
-        function updateDifficulty() {
-        // Прогрессия: сначала скорость и частота, потом количество
-        if (score >= 40) {
-            // Совсем хардкор — 2 яйца, но с разносом по времени
-            currentEggSpeed = 11;
-            currentSpawnInterval = 800;
-            currentEggsPerSpawn = 2;
-        } else if (score >= 30) {
-            currentEggSpeed = 10;
-            currentSpawnInterval = 750;
-            currentEggsPerSpawn = 1;
-        } else if (score >= 20) {
-            currentEggSpeed = 9;
-            currentSpawnInterval = 850;
-            currentEggsPerSpawn = 1;
-        } else if (score >= 15) {
-            currentEggSpeed = 8;
-            currentSpawnInterval = 950;
-            currentEggsPerSpawn = 1;
-        } else if (score >= 10) {
-            currentEggSpeed = 7;
-            currentSpawnInterval = 1050;
-            currentEggsPerSpawn = 1;
-        } else if (score >= 5) {
-            currentEggSpeed = 6;
-            currentSpawnInterval = 1200;
-            currentEggsPerSpawn = 1;
-        } else {
-            currentEggSpeed = 5;
-            currentSpawnInterval = 1400;
-            currentEggsPerSpawn = 1;
-        }
-    }
-
-    // ───── Управление игрой ─────
-    function startGame() {
-        gameStarted = true;
-        const startScreen = document.getElementById("startScreen");
-        if (startScreen) {
-            startScreen.style.display = "none";
-            startScreen.style.visibility = "hidden";
-            startScreen.style.pointerEvents = "none";
-        }
-        lastSpawnTime = performance.now();
-        lastFrameTime = performance.now();
-        gameLoopTimer = requestAnimationFrame(gameLoop);
-    }
-
-    function endGame() {
-        gameActive = false;
-        gameStarted = false;
-        finalScore.textContent = score;
-        gameOver.style.display = "block";
-        vibrate("long");
-
-        if (gameLoopTimer) {
-            cancelAnimationFrame(gameLoopTimer);
-            gameLoopTimer = null;
-        }
-    }
-
-    function restartGame() {
-        // Чистим старые яйца
-        activeEggs.forEach(e => {
-            if (e.el.parentNode) e.el.parentNode.removeChild(e.el);
-        });
-        activeEggs = [];
-
-        score = 0;
-        lives = 3;
-        gameActive = true;
-        gameStarted = true;
-        basketPosition = 50;
-        currentEggSpeed = 5;
-        currentSpawnInterval = 1400;
-        currentEggsPerSpawn = 1;
-
-        scoreText.textContent = score;
-        updateLives();
-        updateBasket();
-        gameOver.style.display = "none";
-
-        lastSpawnTime = performance.now();
-        lastFrameTime = performance.now();
-        gameLoopTimer = requestAnimationFrame(gameLoop);
-    }
-
-    // ───── Кнопки ─────
-    const startBtn = document.getElementById("startBtn");
-    if (startBtn) {
-        startBtn.addEventListener("click", startGame);
-        startBtn.addEventListener("touchstart", (e) => {
-            e.preventDefault();
-            startGame();
-        }, { passive: false });
-    }
-
-    document.getElementById("restartBtn").addEventListener("click", restartGame);
-    document.getElementById("restartBtn").addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        restartGame();
-    }, { passive: false });
-
-    // ───── Стартовая отрисовка ─────
-    updateBasket();
-    updateLives();
-
-    // Обновление сложности в игровом цикле
-    const originalGameLoop = gameLoop;
-    gameLoop = function(now) {
-        updateDifficulty();
-        originalGameLoop(now);
-    };
-
-
-
-
-</script>
-
-</body>
-</html>
+'use strict';
+const $=id=>document.getElementById(id), canvas=$('world'),ctx=canvas.getContext('2d');
+const KEY='musya-golden-nest-v1';
+const fresh=()=>({feathers:0,best:0,runs:0,wins:0,total:0,up:{heart:0,basket:0,luck:0},found:[],sound:false,saved:null});
+let meta=fresh(),storageOK=true;
+try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(raw&&raw.up){meta={...fresh(),...raw,up:{...fresh().up,...raw.up}};if(!Array.isArray(meta.found))meta.found=[];for(const k of ['feathers','best','runs','wins','total'])meta[k]=Math.max(0,Number(meta[k])||0);for(const k of ['heart','basket','luck'])meta.up[k]=Math.max(0,Math.min(3,Number(meta.up[k])||0));}}catch(e){storageOK=false}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(meta))}catch(e){storageOK=false}}
+let W=400,H=800,state='home',run=null,items=[],sparks=[],last=0,spawn=0,clock=0,toastTime=0,keys={},audio=null;
+const zones=[{name:'Медовый луг',sky:'#214b40',ground:'#456548',accent:'#d4db86'},{name:'Сумеречный сад',sky:'#363858',ground:'#4e4b67',accent:'#d1b1e7'},{name:'Звёздная роща',sky:'#162d4b',ground:'#294762',accent:'#96dcd8'}];
+const titles=['Первое пёрышко','Золотая пора','Жулик вышел гулять','Шёпот яблонь','Лунный урожай','Жулик снова здесь','По следам звёзд','Последний поворот','Хранитель гнезда'];
+const upgrades=[
+{id:'wide',icon:'🧺',name:'Бездонная корзинка',desc:'Корзина шире на 18%. Проще ловить и сложнее увернуться.',max:3,tag:'Ловкость'},
+{id:'magnet',icon:'🧲',name:'Яичный магнит',desc:'Яйца рядом с корзиной притягиваются к ней.',max:3,tag:'Притяжение'},
+{id:'gold',icon:'✦',name:'Золотая жилка',desc:'На 9% больше золотых яиц. Они дают тройной улов.',max:3,tag:'Удача'},
+{id:'slow',icon:'❄',name:'Мягкое падение',desc:'Яйца и шишки падают на 10% медленнее.',max:3,tag:'Спокойствие'},
+{id:'shield',icon:'🫧',name:'Бережный пузырь',desc:'В начале каждого этапа защищает от одной ошибки.',max:2,tag:'Защита'},
+{id:'combo',icon:'🔥',name:'Вошла во вкус',desc:'Множитель комбо растёт каждые 4 яйца вместо 6.',max:1,tag:'Азарт'},
+{id:'freeze',icon:'⏳',name:'Ещё секундочку',desc:'Замедление длится на 2 секунды дольше. Перезарядка быстрее.',max:2,tag:'Время'},
+{id:'cat',icon:'🐾',name:'Жулик на подхвате',desc:'Кот спасает одно пропущенное яйцо каждые 12 секунд.',max:1,tag:'Напарник'},
+{id:'heal',icon:'💚',name:'Объятия Матусевича',desc:'Восстановить 2 сердечка прямо сейчас.',max:99,tag:'Забота'},
+{id:'heart',icon:'♥',name:'Большое сердце',desc:'+1 к максимуму жизней и восстановление 1 сердца.',max:2,tag:'Выносливость'}];
+const relics=[['🌼','Луговой цветок','Пройти 1-й этап'],['🐾','След Жулика','Пройти 3-й этап'],['🌙','Лунный камень','Пройти 6-й этап'],['👑','Золотое гнездо','Пройти все 9 этапов'],['🔥','Искра азарта','Комбо из 20 яиц'],['🥚','Яичный мастер','Поймать 100 яиц за всё время']];
+function unlock(i){if(!meta.found.includes(i)){meta.found.push(i);save();toast('Находка: '+relics[i][1])}}
+function resize(){const r=$('app').getBoundingClientRect();W=r.width;H=r.height;const d=Math.min(devicePixelRatio||1,2);canvas.width=W*d;canvas.height=H*d;ctx.setTransform(d,0,0,d,0,0)}
+window.addEventListener('resize',resize);resize();
+function sound(freq=550){if(!meta.sound)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);o.type='sine';o.frequency.setValueAtTime(freq,audio.currentTime);g.gain.setValueAtTime(.045,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.13);o.start();o.stop(audio.currentTime+.14)}catch(e){}}
+function haptic(){try{window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light')}catch(e){}}
+function toast(t){$('toast').textContent=t;toastTime=2;$('toast').classList.add('show')}
+function show(html){$('screen').innerHTML='<div class="content">'+html+'</div>';$('screen').hidden=false}
+function btn(text,action,cls='primary'){return `<button class="${cls}" data-action="${action}">${text}</button>`}
+function home(){state='home';$('hud').hidden=true;$('bottom').hidden=true;show(`<div class="brand"><span class="eyebrow">Маленькое приключение для Муси</span><span class="tiny">v2.0</span></div><div class="hero"><div class="halo"><div class="egg"></div><span class="orbit" style="left:-16px;bottom:12px">🌿</span><span class="orbit" style="right:-14px;top:22px">✦</span></div></div><div class="eyebrow">Поймай немного волшебства</div><h1>Муся и<br>золотое гнездо</h1><p>Жулик рассыпал волшебные яйца.<br>Собери свой набор сил — и доберись<br>до самого сердца звёздной рощи.</p><div class="stats"><span class="pill">🪶 ${meta.feathers} пёрышек</span><span class="pill">Рекорд ${meta.best}</span><span class="pill">${meta.found.length}/6 находок</span></div>${meta.saved?btn('Продолжить приключение →','continue'):btn('Отправиться в приключение →','new')}<div class="row">${btn('Мастерская','shop','secondary')}${btn('Находки','collection','secondary')}</div><div class="row">${btn('Как играть','help','secondary')}${btn(meta.sound?'Звук: вкл.':'Звук: выкл.','sound','secondary')}</div>${!storageOK?'<p class="note">Сохранения недоступны в этом браузере. Прогресс останется только до закрытия игры.</p>':''}<div class="footer">Сделано с любовью Матусевичем ♡</div>`)}
+function help(){show(`<div class="eyebrow">Всё просто. А дальше — магия.</div><h2>Лови. Выбирай.<br>Становись сильнее.</h2><div class="cards"><div class="card"><span class="symbol">🧺</span><div><h3>Корзинка следует за тобой</h3><p>Води пальцем по полю или мышью. На компьютере работают стрелки и A / D.</p></div></div><div class="card"><span class="symbol">🥚</span><div><h3>Яйца — ловим. Шишки — мимо.</h3><p>Пропустила яйцо или поймала шишку — теряешь сердце. Золотое яйцо даёт 3 единицы улова. Сердца лечат, снежинки замедляют время.</p></div></div><div class="card"><span class="symbol">✦</span><div><h3>Твой собственный набор сил</h3><p>После этапа выбирай 1 из 3 усилений. Силы складываются до конца забега. На этапах 3, 6 и 9 Жулик устраивает испытание.</p></div></div></div><p>Пёрышки выдаются за каждый улов и завершённый этап. Они остаются после поражения: улучшай старт в мастерской. Прогресс сохраняется на этом устройстве, в этом браузере.</p>${btn('Понятно, погнали','home')}`)}
+function shop(){state='shop';const names={heart:['♥','Запас заботы','+1 стартовое сердце'],basket:['🧺','Удобная корзинка','+7% стартовой ширины'],luck:['✦','Счастливое пёрышко','+3% шанс золотого яйца']};show(`<div class="eyebrow">Остаётся между забегами</div><h2>Мастерская Муси</h2><p>Маленькие улучшения для больших приключений. Действуют со следующего забега.</p><div class="pill">🪶 ${meta.feathers} пёрышек</div><div class="cards">${Object.entries(names).map(([k,v])=>{const n=meta.up[k],cost=30+n*35;return `<button class="card" data-buy="${k}" ${n>=3||meta.feathers<cost?'disabled':''}><span class="symbol">${v[0]}</span><div><span class="tag">Уровень ${n}/3</span><h3>${v[1]}</h3><p>${v[2]} за уровень · ${n>=3?'Максимум':cost+' 🪶'}</p></div></button>`}).join('')}</div>${btn('К приключению','home','secondary')}`)}
+function collection(){state='collection';show(`<div class="eyebrow">Память о приключениях</div><h2>Мусины сокровища</h2><p>В каждой находке — маленькая история.</p><div class="collection">${relics.map((r,i)=>`<div class="collect ${meta.found.includes(i)?'':'locked'}"><span>${meta.found.includes(i)?r[0]:'◇'}</span><b>${r[1]}</b><p class="tiny">${r[2]}</p></div>`).join('')}</div><div class="stats"><span class="pill">Побед: ${meta.wins}</span><span class="pill">Всего яиц: ${meta.total}</span></div>${btn('Вернуться','home','secondary')}`)}
+function newRun(){run={baseBasket:meta.up.basket,baseLuck:meta.up.luck,level:1,hp:4+meta.up.heart,maxHp:4+meta.up.heart,score:0,earned:0,caught:0,combo:0,bestCombo:0,perks:{},x:.5,cooldown:0,freeze:0,catCd:0,shield:0,elapsed:0,goal:0,collected:0,mode:'normal',offers:[]};meta.runs++;levelIntro()}
+function checkpoint(phase){meta.saved={...JSON.parse(JSON.stringify(run)),phase};save()}
+function map(){return '<div class="map">'+titles.map((t,i)=>`<span class="node ${i+1<run.level?'done':i+1===run.level?'current':''}">${i+1<run.level?'✓':i+1}</span>`).join('')+'</div>'}
+function levelIntro(){state='intro';items=[];run.collected=0;run.elapsed=0;run.goal=12+run.level*3;run.shield=run.perks.shield||0;run.freeze=0;run.cooldown=0;run.catCd=0;run.x=.5;checkpoint('intro');const z=zones[Math.floor((run.level-1)/3)];show(`<div class="eyebrow">${z.name} · этап ${run.level} / 9</div>${map()}<h2>${titles[run.level-1]}</h2><p>${run.level===1?'«Муся, я тут совсем чуть-чуть пошалил…» — Жулик прячет лапы. Кажется, собирать яйца придётся тебе.':run.level%3===0?'Жулик приготовил шишки и хитрые броски! Лови яйца, обходи шишки и используй замедление.':run.level===4?'Сад засыпает, а золотые яйца светятся ещё ярче. Твои силы путешествуют вместе с тобой.':run.level===7?'Гнездо уже близко. Над рощей загораются звёзды — самое время собрать сильную комбинацию.':'Новая тропинка, новые яйца и ещё один шаг к золотому гнезду.'}</p><div class="note">Цель: ${run.goal} единиц улова ${run.level%3===0?'· испытание Жулика':''}<br>♥ ${run.hp}/${run.maxHp} · ${Object.values(run.perks).reduce((a,b)=>a+b,0)} усилений</div>${run.level===1?'<p class="tiny">🥚 ловим · 🌰 пропускаем · 💚 лечимся<br>Кнопка ❄ и пробел замедляют время.</p>':''}${btn('Начать этап →','play')}${btn('На главную','home','secondary')}`)}
+function play(){state='playing';$('screen').hidden=true;$('hud').hidden=false;$('bottom').hidden=false;spawn=.75;last=performance.now();updateHud()}
+function resumeSaved(){if(!meta.saved)return;const phase=meta.saved.phase;run=JSON.parse(JSON.stringify(meta.saved));items=run.falling||[];spawn=run.spawnWait||.5;delete run.phase;delete run.falling;delete run.spawnWait;if(phase==='choice')choice(false);else if(phase==='playing'){state='playing';$('hud').hidden=false;$('bottom').hidden=false;updateHud();pause()}else levelIntro()}
+function saveActive(){if(run&&(state==='playing'||state==='paused')){meta.saved={...JSON.parse(JSON.stringify(run)),phase:'playing',falling:JSON.parse(JSON.stringify(items)),spawnWait:spawn}}save()}
+function reward(n){run.earned+=n;meta.feathers+=n}
+function width(){return Math.min(W*.43,W*.19*(1+(run?.baseBasket||0)*.07)*(1+(run?.perks.wide||0)*.18))}
+function updateHud(){const z=zones[Math.floor((run.level-1)/3)];$('location').textContent=z.name;$('levelTitle').textContent=`${run.level} / 9 · ${titles[run.level-1]}`;$('health').textContent='♥'.repeat(run.hp)+'♡'.repeat(Math.max(0,run.maxHp-run.hp))+(run.shield?' · 🫧 '+run.shield:'');$('score').textContent=run.score+' очков';$('progress').style.width=Math.min(100,run.collected/run.goal*100)+'%';$('objective').textContent=`Улов ${run.collected} / ${run.goal}`;$('combo').textContent=run.combo>=2?`Комбо ${run.combo} · ×${mult()}`:'Лови без промахов';$('power').disabled=run.cooldown>0;$('power').textContent=run.freeze>0?'❄ Время замедлено':run.cooldown>0?`❄ Через ${Math.ceil(run.cooldown)} с`:'❄ Замедлить'}
+function mult(){return Math.min(5,1+Math.floor(run.combo/(run.perks.combo?4:6)))}
+function activate(){if(state!=='playing'||run.cooldown>0)return;run.freeze=4+(run.perks.freeze||0)*2;run.cooldown=19-(run.perks.freeze||0)*3;sound(330);toast('Тише, мир ❄')}
+function spawnItem(){let q=Math.random(),type='egg';const boss=run.level%3===0;const danger=run.level===1?0:boss?.25:.13;const gold=.1+(run.baseLuck||0)*.03+(run.perks.gold||0)*.09;if(q<danger)type='cone';else if(q<danger+.035)type='heart';else if(q<danger+.065)type='ice';else if(q<danger+.065+gold)type='gold';const x=.08+Math.random()*.84;items.push({x,y:136,type,rot:Math.random()-.5,v:(H-250)/(3.7-run.level*.16)*(1-(run.perks.slow||0)*.1),wobble:boss&&type==='cone'?Math.random()*6:0})}
+function burst(x,y,color){for(let i=0;i<9;i++)sparks.push({x,y,vx:(Math.random()-.5)*125,vy:-30-Math.random()*90,life:.65,color})}
+function caught(it){const x=it.x*W,y=H-117;if(it.type==='cone'){damage();burst(x,y,'#ce9872');return}if(it.type==='heart'){run.hp=Math.min(run.maxHp,run.hp+1);toast('Немного заботы ♥');burst(x,y,'#bce5a0');return}if(it.type==='ice'){run.freeze=Math.max(run.freeze,4);burst(x,y,'#b7e6ed');return}run.combo++;run.bestCombo=Math.max(run.bestCombo,run.combo);run.caught++;meta.total++;const n=it.type==='gold'?3:1;run.collected+=n;run.score+=n*10*mult();reward(it.type==='gold'?2:1);burst(x,y,it.type==='gold'?'#ffd477':'#fff4d8');sound(it.type==='gold'?850:520+Math.min(run.combo,20)*15);if(run.combo===20)unlock(4);if(meta.total>=100)unlock(5);if(run.combo>0&&run.combo%10===0)toast(`${run.combo} подряд! Вот это Муся!`);if(run.collected>=run.goal)complete()}
+function damage(){run.combo=0;if(run.shield>0){run.shield--;toast('Пузырь защитил!');return}run.hp--;haptic();sound(150);if(run.hp<=0)finish(false)}
+function missed(it){if(it.type!=='egg'&&it.type!=='gold')return;if(run.perks.cat&&run.catCd<=0){run.catCd=12;toast('Жулик подхватил 🐾');caught(it);return}damage()}
+function complete(){reward(7+run.level*2);if(run.level===1)unlock(0);if(run.level===3)unlock(1);if(run.level===6)unlock(2);if(run.level===9){unlock(3);finish(true);return}choice(true)}
+function choice(generate){state='choice';items=[];if(generate){const pool=upgrades.filter(u=>(run.perks[u.id]||0)<u.max&&(u.id!=='heal'||run.hp<run.maxHp));run.offers=pool.sort(()=>Math.random()-.5).slice(0,3).map(u=>u.id)}checkpoint('choice');show(`<div class="eyebrow">Этап ${run.level} пройден · +${7+run.level*2} 🪶</div><h2>Маленькое чудо.<br>Большая разница.</h2><p>Выбери одну силу. Она останется до конца этого приключения и усилит твой набор.</p><div class="cards">${run.offers.map(id=>{const u=upgrades.find(v=>v.id===id);return `<button class="card" data-perk="${id}"><span class="symbol">${u.icon}</span><div><span class="tag">${u.tag}${run.perks[id]?' · ур. '+(run.perks[id]+1):''}</span><h3>${u.name}</h3><p>${u.desc}</p></div></button>`}).join('')}</div><div class="tiny">♥ ${run.hp}/${run.maxHp} · ${run.score} очков · ${run.earned} пёрышек за забег</div>`)}
+function take(id){if(state!=='choice'||!run.offers.includes(id))return;if(id==='heal')run.hp=Math.min(run.maxHp,run.hp+2);else{run.perks[id]=(run.perks[id]||0)+1;if(id==='heart'){run.maxHp++;run.hp++}}run.level++;sound(740);levelIntro()}
+function finish(win){state='end';items=[];meta.saved=null;meta.best=Math.max(meta.best,run.score);if(win){meta.wins++;reward(45)}save();show(`<div class="eyebrow">${win?'Золотое гнездо найдено':'Это была хорошая история'}</div><div class="hero"><div class="halo"><span style="font-size:75px">${win?'👑':'🌙'}</span></div></div><h2>${win?'Муся, ты волшебница!':'Отдохнём — и ещё раз?'}</h2><p>${win?'Жулик свернулся рядом с гнездом и делает вид, что всё так и задумал. А Матусевич всегда знал: ты справишься. ♡':'Жулик собрал пёрышки и принёс их тебе. Они никуда не пропали — впереди новый набор сил и новая попытка.'}</p><div class="bigstat">${run.score} <span style="font:14px system-ui">очков</span></div><div class="stats"><span class="pill">🪶 +${run.earned}</span><span class="pill">Комбо ${run.bestCombo}</span><span class="pill">Этап ${run.level}/9</span></div>${win?'<div class="note">Бонус за победу: 45 пёрышек уже добавлены.</div>':''}${btn('Ещё одно приключение','new')}${btn('Улучшить старт','shop','secondary')}${btn('На главную','home','secondary')}`)}
+function pause(){if(state!=='playing')return;state='paused';keys={};saveActive();show(`<div class="eyebrow">Никуда не спешим</div><h2>Минутка для себя</h2><p>Яйца подождут. Муся важнее.</p><div class="note">Твои силы: ${Object.keys(run.perks).length?Object.entries(run.perks).map(([k,v])=>upgrades.find(u=>u.id===k).name+' '+v).join(' · '):'первое чудо ещё впереди'}</div>${btn('Продолжить','resume')}${btn('Завершить забег','abandon','secondary')}`)}
+$('screen').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.perk)return take(b.dataset.perk);if(b.dataset.buy){const k=b.dataset.buy,n=meta.up[k],cost=30+n*35;if(n<3&&meta.feathers>=cost){meta.feathers-=cost;meta.up[k]++;save();shop()}return}const a=b.dataset.action;if(a==='home')home();if(a==='new')newRun();if(a==='continue')resumeSaved();if(a==='play')play();if(a==='resume'){state='playing';$('screen').hidden=true;last=performance.now()}if(a==='shop')shop();if(a==='collection')collection();if(a==='help')help();if(a==='sound'){meta.sound=!meta.sound;save();sound();home()}if(a==='abandon')finish(false)});
+$('pause').onclick=pause;$('power').onclick=activate;
+function move(e){if(state!=='playing')return;const r=canvas.getBoundingClientRect();run.x=Math.max(width()/2/W,Math.min(1-width()/2/W,(e.clientX-r.left)/W))}
+canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);move(e)});canvas.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.buttons)move(e)});
+window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight',' ','Escape'].includes(e.key))e.preventDefault();keys[e.key.toLowerCase()]=true;if(e.key===' '&&!e.repeat)activate();if(e.key==='Escape')pause()});window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);window.addEventListener('blur',()=>{keys={};pause()});document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});window.addEventListener('pagehide',saveActive);let saveClock=0;
+function ellipse(x,y,rx,ry,c){ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill()}
+function eggDraw(x,y,gold,size=15,rot=0){ctx.save();ctx.translate(x,y);ctx.rotate(rot);const g=ctx.createRadialGradient(-size*.3,-size*.4,1,0,0,size*1.4);g.addColorStop(0,gold?'#fff5b6':'#fffbed');g.addColorStop(1,gold?'#dca04b':'#c6cabb');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(0,-size*1.4);ctx.bezierCurveTo(size,-size*1.4,size*1.35,size*.95,0,size);ctx.bezierCurveTo(-size*1.35,size*.95,-size,-size*1.4,0,-size*1.4);ctx.fill();if(gold){ctx.fillStyle='#fff9d2';ctx.font='17px Georgia';ctx.textAlign='center';ctx.fillText('✦',0,4)}ctx.restore()}
+function draw(){const zone=zones[run?Math.min(2,Math.floor((run.level-1)/3)):0];ctx.fillStyle=zone.sky;ctx.fillRect(0,0,W,H);const glow=ctx.createRadialGradient(W*.65,H*.22,10,W*.5,H*.35,H*.8);glow.addColorStop(0,'#fff0ac13');glow.addColorStop(1,'#00000018');ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);ellipse(W*.82,H*.22,35,35,'#e9e8b61c');for(let i=0;i<25;i++){const x=(Math.sin(i*71)*.5+.5)*W,y=(Math.cos(i*29)*.5+.5)*H*.75;ellipse(x,y,1.3,1.3,`rgba(255,237,172,${.2+.15*Math.sin(clock+i)})`)}
+for(let i=0;i<7;i++){let x=i*W/5-30;ctx.fillStyle='#0c28272c';ctx.fillRect(x,H*.32,16,H*.6);ellipse(x+5,H*.38,52,110,'#0b292526')}
+ellipse(W*.16,H*.89,W*.85,H*.15,zone.ground);ellipse(W*.96,H*.94,W*.9,H*.2,zone.ground);ctx.strokeStyle=zone.accent+'22';ctx.lineWidth=1;for(let i=0;i<35;i++){let x=(i*79)%W,y=H-60-(i%5)*17;ctx.beginPath();ctx.moveTo(x,y+12);ctx.quadraticCurveTo(x-7,y,x-2,y-7);ctx.stroke()}
+if(run){if(run.level%3===0){const cx=W*.5+Math.sin(clock*.8)*W*.25;ellipse(cx,157,24,19,'#aeb8ad');ctx.fillStyle='#aeb8ad';ctx.beginPath();ctx.moveTo(cx-21,149);ctx.lineTo(cx-18,125);ctx.lineTo(cx-5,142);ctx.moveTo(cx+5,142);ctx.lineTo(cx+18,125);ctx.lineTo(cx+21,149);ctx.fill();ellipse(cx-8,153,3,4,'#263e32');ellipse(cx+8,153,3,4,'#263e32');ellipse(cx,160,3,2,'#b47779')}
+for(const it of items){const x=it.x*W;if(it.type==='egg'||it.type==='gold'){eggDraw(x,it.y,it.type==='gold',14,it.rot)}else{ctx.font='27px system-ui';ctx.textAlign='center';ctx.fillText(it.type==='cone'?'🌰':it.type==='heart'?'💚':'❄',x,it.y+10)}}
+const x=run.x*W,y=H-117,bw=width();if(run.perks.magnet){ellipse(x,y-7,bw*.85,51,'#bce5a00b')}if(run.shield){ctx.strokeStyle='#b3e7e899';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y+5,bw*.7,40,0,0,Math.PI*2);ctx.stroke()}ctx.strokeStyle='#d2a968';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(x,y+1,bw*.3,27,0,Math.PI,Math.PI*2);ctx.stroke();ctx.fillStyle='#b88750';ctx.beginPath();ctx.moveTo(x-bw/2,y);ctx.lineTo(x-bw*.39,y+34);ctx.quadraticCurveTo(x,y+43,x+bw*.39,y+34);ctx.lineTo(x+bw/2,y);ctx.closePath();ctx.fill();ctx.strokeStyle='#e3bb79';ctx.lineWidth=3;for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(x-bw*.4,y+i*8);ctx.lineTo(x+bw*.4,y+i*8);ctx.stroke()}ctx.strokeStyle='#7e583a55';ctx.lineWidth=2;for(let i=-3;i<=3;i++){ctx.beginPath();ctx.moveTo(x+i*bw/9,y+3);ctx.lineTo(x+i*bw/10,y+35);ctx.stroke()}ellipse(x,y,bw/2,6,'#f0cd92');ellipse(x,y,bw/2-5,3,'#785638');ctx.fillStyle='#fff1c8';ctx.textAlign='center';ctx.font='12px Georgia';ctx.fillText('♥',x,y+25);if(run.freeze>0){ctx.fillStyle='#a1e2ff13';ctx.fillRect(0,0,W,H)}}
+for(const p of sparks)ellipse(p.x,p.y,2.5,2.5,p.color)
+}
+function tick(now){const dt=Math.min(.04,(now-last)/1000||0);last=now;clock+=dt;if(toastTime>0){toastTime-=dt;if(toastTime<=0)$('toast').classList.remove('show')}sparks=sparks.filter(p=>{p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=150*dt;return p.life>0});if(state==='playing'){saveClock+=dt;if(saveClock>3){saveClock=0;saveActive()}run.elapsed+=dt;run.cooldown=Math.max(0,run.cooldown-dt);run.freeze=Math.max(0,run.freeze-dt);run.catCd=Math.max(0,run.catCd-dt);const dir=(keys.arrowright||keys.d?1:0)-(keys.arrowleft||keys.a?1:0);run.x=Math.max(width()/2/W,Math.min(1-width()/2/W,run.x+dir*dt*1.2));const speed=run.freeze>0?.38:1;spawn-=dt*speed;if(spawn<=0){spawnItem();spawn=Math.max(.49,1.1-run.level*.045)}for(let i=items.length-1;i>=0&&state==='playing';i--){const it=items[i];it.y+=it.v*dt*speed;if(it.wobble)it.x=Math.max(.06,Math.min(.94,it.x+Math.sin(run.elapsed*2+it.wobble)*dt*.035));if(run.perks.magnet&&(it.type==='egg'||it.type==='gold')&&it.y>H-270&&Math.abs(it.x-run.x)*W<width()*(.8+run.perks.magnet*.2))it.x+=(run.x-it.x)*dt*(2+run.perks.magnet);if(it.y>=H-121){items.splice(i,1);if(Math.abs(it.x-run.x)*W<width()/2+7)caught(it);else missed(it)}}updateHud()}draw();requestAnimationFrame(tick)}
+home();requestAnimationFrame(tick);
+// The game runs without the Telegram SDK; integration is optional and never blocks the start screen.
+const sdk=document.createElement('script');sdk.src='https://telegram.org/js/telegram-web-app.js';sdk.onload=()=>{try{const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();tg?.disableVerticalSwipes?.();tg?.setHeaderColor?.('#162b2a')}catch(e){}};document.head.appendChild(sdk);
+</script></body></html>
